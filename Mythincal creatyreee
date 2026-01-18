@@ -1,0 +1,83 @@
+index.html<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wave Creature v0.1</title>
+  <style>
+    body { margin: 0; background: #111; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <script>
+    let playerY, playerVel = 0, gravity = 0.05, lift = -0.12;
+    let crashX = 0, crashSpeed = 1.2, resetTimer = 0, score = 0;
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      resetGame();
+    }
+
+    function resetGame() {
+      playerY = height / 2;
+      playerVel = 0;
+      crashX = 0;
+      resetTimer = 0;
+      score = 0;
+    }
+
+    function draw() {
+      background(17);
+      drawWave();
+
+      // Physics & Movement
+      if (keyIsDown(UP_ARROW) || keyIsDown(87)) playerVel += lift;
+      if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) playerVel -= lift;
+      playerVel += gravity;
+      playerY = constrain(playerY + (playerVel *= 0.98), height * 0.1, height * 0.9);
+
+      // Scoring & Crash Line
+      crashX += crashSpeed + (frameCount / 3000); 
+      let isDead = (width * 0.6) < crashX;
+
+      // Draw Crash Line
+      stroke(255, 200);
+      strokeWeight(4);
+      line(crashX, 0, crashX, height);
+
+      // UI
+      noStroke(); fill(255); textSize(20);
+      text("Score: " + floor(score), 20, 40);
+
+      drawPlayer(isDead);
+
+      if (isDead) {
+        resetTimer++;
+        if (resetTimer > 60) resetGame();
+      } else {
+        score += 0.1;
+      }
+    }
+
+    function drawPlayer(dead) {
+      push();
+      translate(width * 0.6, playerY);
+      fill(dead ? "red" : 255);
+      rectMode(CENTER);
+      rect(0, 0, 60, 15, 5); // Board
+      rect(-10, -15, 20, 25, 4); // Torso
+      pop();
+    }
+
+    function drawWave() {
+      stroke(50, 100, 255, 150);
+      for (let i = -width; i < width * 2; i += 60) {
+        line(i, height * 0.2, i - 150, height * 0.9);
+      }
+    }
+
+    function windowResized() { resizeCanvas(windowWidth, windowHeight); }
+  </script>
+</body>
+</html>
